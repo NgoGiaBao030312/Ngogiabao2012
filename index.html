@@ -1,226 +1,171 @@
-# 1. Cài đặt các thư viện cần thiết
-!pip install python-telegram-bot fastapi uvicorn nest-asyncio
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác Thực Key Truy Cập</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-# 2. Code chính của Bot & Web
-import sqlite3
-import random
-import string
-import asyncio
-from datetime import datetime, timedelta
-from fastapi import FastAPI, Form
-from fastapi.responses import HTMLResponse, JSONResponse
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-import uvicorn
-import nest_asyncio
+        body {
+            background: linear-gradient(135deg, #1e1e2f, #2d2b42);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-nest_asyncio.apply()
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+        }
 
-# --- CẤU HÌNH ---
-BOT_TOKEN = "8416102851:AAFH46P9tmATY5UF8f3T_xlbqJ5MVoyz_qk"
-WEB_URL = "http://localhost:8000"
-VIP_GROUP_LINK = "https://t.me/+WTAertkETQg5N2Vl"
+        .card h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
 
-app = FastAPI()
+        .input-group {
+            margin-bottom: 20px;
+        }
 
-# --- KHỞI TẠO DATABASE ---
-def init_db():
-    conn = sqlite3.connect('keys.db', check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS keys (
-            key TEXT PRIMARY KEY,
-            status TEXT,
-            created_at TEXT,
-            expires_at TEXT,
-            duration TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
 
-def generate_key_string():
-    chars = string.ascii_uppercase + string.digits
-    parts = [''.join(random.choices(chars, k=4)) for _ in range(4)]
-    return '-'.join(parts)
+        .input-group input:focus {
+            border-color: #0088cc;
+            box-shadow: 0 0 8px rgba(0, 136, 204, 0.5);
+        }
 
-# --- 1. LỆNH TẠO KEY TRÊN TELEGRAM ---
-async def create_key_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    days = 1
-    if context.args:
-        try: days = int(context.args[0])
-        except: days = 1
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #0088cc;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
-    new_key = generate_key_string()
-    now = datetime.now()
-    expires = now + timedelta(days=days)
-    
-    created_str = now.strftime("%a %b %d %Y %H:%M:%S")
-    expires_str = expires.strftime("%a %b %d %Y %H:%M:%S")
+        button:hover {
+            background: #006699;
+        }
 
-    conn = sqlite3.connect('keys.db')
-    cursor = conn.cursor()
-    cursor.execute('INSERT INTO keys VALUES (?, ?, ?, ?, ?)',
-                   (new_key, 'Active', created_str, expires_str, f"{days} day(s)"))
-    conn.commit()
-    conn.close()
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
 
-    await update.message.reply_text(
-        f"🔑 **THÔNG TIN KEY MỚI**\n"
-        f"Key: `{new_key}`\n"
-        f"⏳ Thời hạn: {days} day(s)\n\n"
-        f"👉 Gửi key này cho khách nhập tại: {WEB_URL}", parse_mode='Markdown'
-    )
+        #message {
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+        }
 
-# --- 2. GIAO DIỆN WEB (CÓ KIỂM TRA LỖI TRỰC TIẾP) ---
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    return """
-    <!DOCTYPE html>
-    <html lang="vi">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Kích Hoạt Key VIP</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    </head>
-    <body class="bg-[#0f172a] text-white flex items-center justify-center min-h-screen font-sans p-4">
-        <div class="container max-w-md mx-auto">
-            
-            <!-- FORM NHẬP KEY -->
-            <div id="card-form" class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 text-center">
-                <div class="mb-4 inline-flex p-4 bg-amber-500/10 text-amber-400 rounded-full text-3xl">
-                    <i class="fa-solid fa-key"></i>
-                </div>
-                <h2 class="text-2xl font-bold mb-2 text-amber-400">KÍCH HOẠT KEY VIP</h2>
-                <p class="text-slate-400 text-sm mb-6">Nhập mã Key của bạn để xác thực và nhận đường link tham gia nhóm Telegram VIP.</p>
-                
-                <form id="redeem-form" onsubmit="submitKey(event)" class="space-y-4">
-                    <div class="relative">
-                        <input type="text" id="key-input" required placeholder="XXXX-XXXX-XXXX-XXXX" 
-                               class="w-full px-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-400 uppercase tracking-widest text-center font-mono text-lg text-amber-300 placeholder-slate-600 shadow-inner">
-                    </div>
-                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 font-bold rounded-xl hover:opacity-90 transition shadow-lg text-slate-950 flex items-center justify-center gap-2 text-base cursor-pointer">
-                        <i class="fa-solid fa-shield-halved"></i> XÁC NHẬN KÍCH HOẠT
-                    </button>
-                </form>
-                <div id="error-msg" class="mt-4 text-red-400 text-sm hidden font-medium bg-red-500/10 p-3 rounded-xl border border-red-500/20"></div>
-            </div>
+        .success {
+            color: #4caf50;
+        }
 
-            <!-- CARD THÀNH CÔNG (ẨN BAN ĐẦU) -->
-            <div id="card-success" class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 text-center space-y-4 hidden">
-                <div class="inline-flex p-4 bg-green-500/10 text-green-400 rounded-full text-4xl">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-green-400">KÍCH HOẠT THÀNH CÔNG!</h2>
-                <p id="duration-text" class="text-slate-300 text-sm">Gói kích hoạt: <b class="text-amber-400">1 day(s)</b></p>
-                <p class="text-slate-400 text-xs">Mã key hợp lệ. Bấm vào nút bên dưới để tham gia nhóm Telegram ngay bây giờ.</p>
-                
-                <div class="pt-2">
-                    <a id="vip-link" href="" target="_blank" class="block w-full py-3.5 bg-sky-500 hover:bg-sky-400 font-bold rounded-xl text-white transition shadow-lg text-center flex items-center justify-center gap-2 text-base">
-                        <i class="fa-brands fa-telegram text-2xl"></i> VÀO NHÓM TELEGRAM VIP
-                    </a>
-                </div>
-                <div class="pt-2">
-                    <button onclick="resetForm()" class="text-slate-400 hover:text-white text-xs underline cursor-pointer bg-transparent border-none">
-                        ← Nhập mã key khác
-                    </button>
-                </div>
-            </div>
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
 
+    <div class="card">
+        <h2>Nhập Key Kích Hoạt</h2>
+        <div class="input-group">
+            <input type="text" id="keyInput" placeholder="Nhập Key của bạn..." autocomplete="off">
         </div>
+        <button id="submitBtn" onclick="verifyKey()">Xác nhận Key</button>
+        <div id="message"></div>
+    </div>
 
-        <script>
-            async function submitKey(event) {
-                event.preventDefault();
-                const keyVal = document.getElementById('key-input').value.trim();
-                const errorDiv = document.getElementById('error-msg');
-                
-                errorDiv.classList.add('hidden');
+    <script>
+        // Token Bot Telegram của bạn
+        const BOT_TOKEN = '8416102851:AAFH46P9tmATY5UF8f3T_xlbqJ5MVoyz_qk';
 
-                const formData = new URLSearchParams();
-                formData.append('key', keyVal);
+        async function verifyKey() {
+            const keyInput = document.getElementById('keyInput').value.trim();
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submitBtn');
 
-                try {
-                    const response = await fetch('/redeem-api', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: formData
-                    });
-                    const data = await response.json();
+            if (!keyInput) {
+                messageDiv.className = 'error';
+                messageDiv.innerText = 'Vui lòng nhập Key!';
+                return;
+            }
 
-                    if (data.status === 'success') {
-                        document.getElementById('card-form').classList.add('hidden');
-                        document.getElementById('duration-text').innerHTML = 'Gói kích hoạt: <b class="text-amber-400">' + data.duration + '</b>';
-                        document.getElementById('vip-link').href = data.link;
-                        document.getElementById('card-success').classList.remove('hidden');
-                    } else {
-                        errorDiv.textContent = data.message;
-                        errorDiv.classList.remove('hidden');
-                    }
-                } catch (err) {
-                    errorDiv.textContent = "❌ Đã có lỗi xảy ra, vui lòng thử lại!";
-                    errorDiv.classList.remove('hidden');
+            // Vô hiệu hóa nút và hiển thị trạng thái chờ
+            submitBtn.disabled = true;
+            messageDiv.className = '';
+            messageDiv.innerText = 'Đang kiểm tra Key...';
+
+            try {
+                // Lấy danh sách tin nhắn từ Bot Telegram
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`);
+                const data = await response.json();
+
+                if (!data.ok) {
+                    throw new Error('Không thể kết nối với Telegram API');
                 }
+
+                // Kiểm tra xem Key nhập vào có khớp với bất kỳ tin nhắn nào trong Telegram không
+                const updates = data.result;
+                let isValidKey = false;
+
+                for (let update of updates) {
+                    if (update.message && update.message.text) {
+                        if (update.message.text.trim() === keyInput) {
+                            isValidKey = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isValidKey) {
+                    messageDiv.className = 'success';
+                    messageDiv.innerText = '✅ Key hợp lệ! Đã xác nhận thành công.';
+                    // Thêm chuyển hướng hoặc hành động sau khi xác thực thành công tại đây
+                } else {
+                    messageDiv.className = 'error';
+                    messageDiv.innerText = '❌ Key không đúng hoặc không tồn tại trên Telegram!';
+                }
+
+            } catch (error) {
+                console.error(error);
+                messageDiv.className = 'error';
+                messageDiv.innerText = 'Lỗi kết nối kiểm tra Key!';
+            } finally {
+                submitBtn.disabled = false;
             }
-
-            function resetForm() {
-                document.getElementById('key-input').value = '';
-                document.getElementById('card-success').classList.add('hidden');
-                document.getElementById('card-form').classList.remove('hidden');
-            }
-        </script>
-    </body>
-    </html>
-    """
-
-# --- 3. API KIỂM TRA KEY CHO GIAO DIỆN WEB ---
-@app.post("/redeem-api")
-async def redeem_api(key: str = Form(...)):
-    clean_key = key.strip().upper()
-    
-    if not clean_key or len(clean_key) < 5:
-        return JSONResponse({"status": "error", "message": "❌ Vui lòng nhập mã Key hợp lệ!"})
-
-    conn = sqlite3.connect('keys.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT status, duration FROM keys WHERE key = ?', (clean_key,))
-    row = cursor.fetchone()
-
-    if not row:
-        conn.close()
-        return JSONResponse({"status": "error", "message": "❌ Key không tồn tại hoặc chưa được tạo từ hệ thống!"})
-
-    status, duration = row
-
-    if status != 'Active':
-        conn.close()
-        return JSONResponse({"status": "error", "message": "⚠️ Key này đã được sử dụng trước đó rồi!"})
-
-    # Đánh dấu key đã dùng
-    cursor.execute('UPDATE keys SET status = "Used" WHERE key = ?', (clean_key,))
-    conn.commit()
-    conn.close()
-
-    return JSONResponse({
-        "status": "success",
-        "duration": duration,
-        "link": VIP_GROUP_LINK
-    })
-
-# --- CHẠY SERVER VÀ BOT ---
-async def main():
-    init_db()
-    telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
-    telegram_app.add_handler(CommandHandler("key", create_key_command))
-    
-    await telegram_app.initialize()
-    await telegram_app.start()
-    asyncio.create_task(telegram_app.updater.start_polling())
-    
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
-    server = uvicorn.Server(config)
-    await server.serve()
-
-await main()
+        }
+    </script>
+</body>
+</html>
