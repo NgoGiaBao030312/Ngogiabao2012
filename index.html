@@ -1,85 +1,226 @@
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+# 1. Cài đặt các thư viện cần thiết
+!pip install python-telegram-bot fastapi uvicorn nest-asyncio
 
-<div class="bg-[#0f172a] text-white flex items-center justify-center min-h-screen font-sans p-4">
-    <div class="container max-w-md mx-auto">
-        
-        <!-- CARD NHẬP KEY -->
-        <div id="redeem-card" class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 text-center">
-            <div class="mb-4 inline-flex p-4 bg-amber-500/10 text-amber-400 rounded-full text-3xl">
-                <i class="fa-solid fa-key"></i>
-            </div>
-            <h2 class="text-2xl font-bold mb-2 text-amber-400">KÍCH HOẠT KEY VIP</h2>
-            <p class="text-slate-400 text-sm mb-6">Nhập mã Key của bạn để xác thực và nhận đường link tham gia nhóm Telegram VIP.</p>
-            
-            <form onsubmit="handleRedeem(event)" class="space-y-4">
-                <div class="relative">
-                    <input type="text" id="key-input" required placeholder="XXXX-XXXX-XXXX-XXXX" 
-                           class="w-full px-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-400 uppercase tracking-widest text-center font-mono text-lg text-amber-300 placeholder-slate-600 shadow-inner">
-                </div>
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 font-bold rounded-xl hover:opacity-90 transition shadow-lg text-slate-950 flex items-center justify-center gap-2 text-base cursor-pointer">
-                    <i class="fa-solid fa-shield-halved"></i> XÁC NHẬN KÍCH HOẠT
-                </button>
-            </form>
-            <div id="error-msg" class="mt-4 text-red-400 text-sm hidden font-medium"></div>
-        </div>
+# 2. Code chính của Bot & Web
+import sqlite3
+import random
+import string
+import asyncio
+from datetime import datetime, timedelta
+from fastapi import FastAPI, Form
+from fastapi.responses import HTMLResponse, JSONResponse
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import uvicorn
+import nest_asyncio
 
-        <!-- CARD THÀNH CÔNG (HIỆN KHI NHẬP ĐÚNG KEY) -->
-        <div id="success-card" class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 text-center hidden space-y-4">
-            <div class="inline-flex p-4 bg-green-500/10 text-green-400 rounded-full text-4xl">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-green-400">KÍCH HOẠT THÀNH CÔNG!</h2>
-            <p class="text-slate-300 text-sm">Mã key hợp lệ. Bấm vào nút bên dưới để tham gia nhóm Telegram ngay bây giờ.</p>
-            
-            <div class="pt-2">
-                <!-- Thay link bên dưới bằng link nhóm Telegram VIP thực tế của bạn -->
-                <a id="telegram-link" href="https://t.me/" target="_blank" class="block w-full py-3.5 bg-sky-500 hover:bg-sky-400 font-bold rounded-xl text-white transition shadow-lg text-center flex items-center justify-center gap-2 text-base">
-                    <i class="fa-brands fa-telegram text-2xl"></i> VÀO NHÓM TELEGRAM VIP
-                </a>
-            </div>
-            <div class="pt-2">
-                <button onclick="resetForm()" class="text-slate-400 hover:text-white text-xs underline cursor-pointer">
-                    ← Nhập mã key khác
-                </button>
-            </div>
-        </div>
+nest_asyncio.apply()
 
-    </div>
-</div>
+# --- CẤU HÌNH ---
+BOT_TOKEN = "8416102851:AAFH46P9tmATY5UF8f3T_xlbqJ5MVoyz_qk"
+WEB_URL = "http://localhost:8000"
+VIP_GROUP_LINK = "https://t.me/+WTAertkETQg5N2Vl"
 
-<script>
-    const input = document.getElementById('key-input');
+app = FastAPI()
+
+# --- KHỞI TẠO DATABASE ---
+def init_db():
+    conn = sqlite3.connect('keys.db', check_same_thread=False)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS keys (
+            key TEXT PRIMARY KEY,
+            status TEXT,
+            created_at TEXT,
+            expires_at TEXT,
+            duration TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def generate_key_string():
+    chars = string.ascii_uppercase + string.digits
+    parts = [''.join(random.choices(chars, k=4)) for _ in range(4)]
+    return '-'.join(parts)
+
+# --- 1. LỆNH TẠO KEY TRÊN TELEGRAM ---
+async def create_key_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    days = 1
+    if context.args:
+        try: days = int(context.args[0])
+        except: days = 1
+
+    new_key = generate_key_string()
+    now = datetime.now()
+    expires = now + timedelta(days=days)
     
-    // Tự động định dạng XXXX-XXXX-XXXX-XXXX khi gõ
-    input.addEventListener('input', function (e) {
-        let value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-        let parts = [];
-        for (let i = 0; i < value.length && i < 16; i += 4) {
-            parts.push(value.substring(i, i + 4));
-        }
-        e.target.value = parts.join('-');
-    });
+    created_str = now.strftime("%a %b %d %Y %H:%M:%S")
+    expires_str = expires.strftime("%a %b %d %Y %H:%M:%S")
 
-    function handleRedeem(event) {
-        event.preventDefault();
-        const keyValue = input.value.trim();
-        const errorMsg = document.getElementById('error-msg');
+    conn = sqlite3.connect('keys.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO keys VALUES (?, ?, ?, ?, ?)',
+                   (new_key, 'Active', created_str, expires_str, f"{days} day(s)"))
+    conn.commit()
+    conn.close()
 
-        if (keyValue.length < 19) {
-            errorMsg.textContent = "❌ Mã Key phải đủ 16 ký tự (VD: TJWC-ZT1N-EEN8-S1LQ)!";
-            errorMsg.classList.remove('hidden');
-            return;
-        }
+    await update.message.reply_text(
+        f"🔑 **THÔNG TIN KEY MỚI**\n"
+        f"Key: `{new_key}`\n"
+        f"⏳ Thời hạn: {days} day(s)\n\n"
+        f"👉 Gửi key này cho khách nhập tại: {WEB_URL}", parse_mode='Markdown'
+    )
 
-        errorMsg.classList.add('hidden');
-        document.getElementById('redeem-card').classList.add('hidden');
-        document.getElementById('success-card').classList.remove('hidden');
-    }
+# --- 2. GIAO DIỆN WEB (CÓ KIỂM TRA LỖI TRỰC TIẾP) ---
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    return """
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kích Hoạt Key VIP</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body class="bg-[#0f172a] text-white flex items-center justify-center min-h-screen font-sans p-4">
+        <div class="container max-w-md mx-auto">
+            
+            <!-- FORM NHẬP KEY -->
+            <div id="card-form" class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 text-center">
+                <div class="mb-4 inline-flex p-4 bg-amber-500/10 text-amber-400 rounded-full text-3xl">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2 text-amber-400">KÍCH HOẠT KEY VIP</h2>
+                <p class="text-slate-400 text-sm mb-6">Nhập mã Key của bạn để xác thực và nhận đường link tham gia nhóm Telegram VIP.</p>
+                
+                <form id="redeem-form" onsubmit="submitKey(event)" class="space-y-4">
+                    <div class="relative">
+                        <input type="text" id="key-input" required placeholder="XXXX-XXXX-XXXX-XXXX" 
+                               class="w-full px-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-400 uppercase tracking-widest text-center font-mono text-lg text-amber-300 placeholder-slate-600 shadow-inner">
+                    </div>
+                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 font-bold rounded-xl hover:opacity-90 transition shadow-lg text-slate-950 flex items-center justify-center gap-2 text-base cursor-pointer">
+                        <i class="fa-solid fa-shield-halved"></i> XÁC NHẬN KÍCH HOẠT
+                    </button>
+                </form>
+                <div id="error-msg" class="mt-4 text-red-400 text-sm hidden font-medium bg-red-500/10 p-3 rounded-xl border border-red-500/20"></div>
+            </div>
 
-    function resetForm() {
-        input.value = '';
-        document.getElementById('success-card').classList.add('hidden');
-        document.getElementById('redeem-card').classList.remove('hidden');
-    }
-</script>
+            <!-- CARD THÀNH CÔNG (ẨN BAN ĐẦU) -->
+            <div id="card-success" class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 text-center space-y-4 hidden">
+                <div class="inline-flex p-4 bg-green-500/10 text-green-400 rounded-full text-4xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-green-400">KÍCH HOẠT THÀNH CÔNG!</h2>
+                <p id="duration-text" class="text-slate-300 text-sm">Gói kích hoạt: <b class="text-amber-400">1 day(s)</b></p>
+                <p class="text-slate-400 text-xs">Mã key hợp lệ. Bấm vào nút bên dưới để tham gia nhóm Telegram ngay bây giờ.</p>
+                
+                <div class="pt-2">
+                    <a id="vip-link" href="" target="_blank" class="block w-full py-3.5 bg-sky-500 hover:bg-sky-400 font-bold rounded-xl text-white transition shadow-lg text-center flex items-center justify-center gap-2 text-base">
+                        <i class="fa-brands fa-telegram text-2xl"></i> VÀO NHÓM TELEGRAM VIP
+                    </a>
+                </div>
+                <div class="pt-2">
+                    <button onclick="resetForm()" class="text-slate-400 hover:text-white text-xs underline cursor-pointer bg-transparent border-none">
+                        ← Nhập mã key khác
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            async function submitKey(event) {
+                event.preventDefault();
+                const keyVal = document.getElementById('key-input').value.trim();
+                const errorDiv = document.getElementById('error-msg');
+                
+                errorDiv.classList.add('hidden');
+
+                const formData = new URLSearchParams();
+                formData.append('key', keyVal);
+
+                try {
+                    const response = await fetch('/redeem-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        document.getElementById('card-form').classList.add('hidden');
+                        document.getElementById('duration-text').innerHTML = 'Gói kích hoạt: <b class="text-amber-400">' + data.duration + '</b>';
+                        document.getElementById('vip-link').href = data.link;
+                        document.getElementById('card-success').classList.remove('hidden');
+                    } else {
+                        errorDiv.textContent = data.message;
+                        errorDiv.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    errorDiv.textContent = "❌ Đã có lỗi xảy ra, vui lòng thử lại!";
+                    errorDiv.classList.remove('hidden');
+                }
+            }
+
+            function resetForm() {
+                document.getElementById('key-input').value = '';
+                document.getElementById('card-success').classList.add('hidden');
+                document.getElementById('card-form').classList.remove('hidden');
+            }
+        </script>
+    </body>
+    </html>
+    """
+
+# --- 3. API KIỂM TRA KEY CHO GIAO DIỆN WEB ---
+@app.post("/redeem-api")
+async def redeem_api(key: str = Form(...)):
+    clean_key = key.strip().upper()
+    
+    if not clean_key or len(clean_key) < 5:
+        return JSONResponse({"status": "error", "message": "❌ Vui lòng nhập mã Key hợp lệ!"})
+
+    conn = sqlite3.connect('keys.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT status, duration FROM keys WHERE key = ?', (clean_key,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return JSONResponse({"status": "error", "message": "❌ Key không tồn tại hoặc chưa được tạo từ hệ thống!"})
+
+    status, duration = row
+
+    if status != 'Active':
+        conn.close()
+        return JSONResponse({"status": "error", "message": "⚠️ Key này đã được sử dụng trước đó rồi!"})
+
+    # Đánh dấu key đã dùng
+    cursor.execute('UPDATE keys SET status = "Used" WHERE key = ?', (clean_key,))
+    conn.commit()
+    conn.close()
+
+    return JSONResponse({
+        "status": "success",
+        "duration": duration,
+        "link": VIP_GROUP_LINK
+    })
+
+# --- CHẠY SERVER VÀ BOT ---
+async def main():
+    init_db()
+    telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
+    telegram_app.add_handler(CommandHandler("key", create_key_command))
+    
+    await telegram_app.initialize()
+    await telegram_app.start()
+    asyncio.create_task(telegram_app.updater.start_polling())
+    
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    server = uvicorn.Server(config)
+    await server.serve()
+
+await main()
