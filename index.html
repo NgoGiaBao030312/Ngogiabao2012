@@ -3,371 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sự Kiện Nhận Code Súng Free Fire</title>
+    <title>Tra cứu người dùng GitHub</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: #0f1015;
-            color: #ffffff;
-            text-align: center;
-        }
-
-        /* BỐ CỤC KHU VỰC 1: XÁC NHẬN ID */
-        .hero-section {
-            min-height: 100vh;
+            background-color: #0d1117;
+            color: #c9d1d9;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
             padding: 20px;
-            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.95)), 
-                        url('https://freefiremobile-a.akamaihd.net/ffwebsite/images/freefire_bg.jpg') center/cover no-repeat;
         }
 
-        .box-container {
-            background: rgba(26, 29, 38, 0.95);
-            border: 2px solid #ff9900;
+        .container {
+            background-color: #161b22;
+            border: 1px solid #30363d;
             border-radius: 12px;
             padding: 30px;
             width: 100%;
-            max-width: 440px;
-            box-shadow: 0 0 25px rgba(255, 153, 0, 0.4);
-        }
-
-        h1 {
-            color: #ff9900;
-            margin-bottom: 10px;
-            font-size: 24px;
-            text-transform: uppercase;
-        }
-
-        p.desc {
-            color: #aaa;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #333;
-            border-radius: 6px;
-            background: #090a0f;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
+            max-width: 450px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
             text-align: center;
-            transition: 0.3s;
         }
 
-        input[type="text"]:focus {
-            border-color: #ff9900;
+        h2 {
+            margin-bottom: 20px;
+            color: #f0f6fc;
         }
 
-        button.btn-confirm {
-            width: 100%;
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
             padding: 12px;
-            background: linear-gradient(45deg, #ff9900, #ff5500);
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background-color: #0d1117;
+            color: #f0f6fc;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #58a6ff;
+        }
+
+        button {
+            padding: 12px 18px;
             border: none;
             border-radius: 6px;
-            color: #fff;
+            background-color: #238636;
+            color: white;
             font-weight: bold;
-            font-size: 16px;
             cursor: pointer;
-            text-transform: uppercase;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: background 0.2s;
         }
 
-        button.btn-confirm:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 85, 0, 0.5);
+        button:hover {
+            background-color: #2ea043;
         }
 
-        /* Khung thông tin nhân vật */
-        .player-info {
+        .result-card {
             display: none;
             margin-top: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 15px;
-            line-height: 1.5;
+            padding-top: 20px;
+            border-top: 1px solid #30363d;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
-        .player-info.success {
-            background: rgba(0, 255, 102, 0.1);
-            border: 1px solid #00ff66;
-            color: #00ff66;
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid #58a6ff;
+            margin-bottom: 15px;
         }
 
-        .player-info.error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff3333;
-            color: #ff3333;
-        }
-
-        /* BỐ CỤC KHU VỰC 2: DANH SÁCH SÚNG VÀ KHU VỰC NHẬP CODE */
-        .code-section {
-            min-height: 100vh;
-            padding: 50px 20px;
-            background: #14161d;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .code-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            width: 100%;
-            max-width: 950px;
-            margin-top: 30px;
-        }
-
-        .code-card {
-            background: #1f232e;
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            transition: 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .code-card:hover {
-            border-color: #ff9900;
-            box-shadow: 0 0 15px rgba(255, 153, 0, 0.2);
-        }
-
-        /* Hình ảnh súng */
-        .gun-img {
-            width: 100%;
-            max-width: 220px;
-            height: 140px;
-            object-fit: contain;
-            margin-bottom: 12px;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
-        }
-
-        .gun-title {
-            color: #ffcc00;
-            font-size: 18px;
+        .user-name {
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 12px;
+            color: #f0f6fc;
         }
 
-        /* Khung chứa mã code mẫu & ô nhập code */
-        .code-display {
-            background: #000;
-            color: #00ff66;
-            font-family: monospace;
-            font-size: 16px;
-            font-weight: bold;
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px dashed #00ff66;
-            margin-bottom: 12px;
-            width: 100%;
-        }
-
-        .code-input-box {
-            width: 100%;
-            display: flex;
-            gap: 8px;
-        }
-
-        .code-input-box input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background: #0d0f14;
-            color: #fff;
+        .user-username {
             font-size: 14px;
+            color: #8b949e;
+            margin-bottom: 10px;
+        }
+
+        .user-bio {
+            font-size: 14px;
+            color: #c9d1d9;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background-color: #0d1117;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+
+        .stat-item {
             text-align: center;
-            text-transform: uppercase;
         }
 
-        .btn-redeem {
-            background: #ff9900;
-            color: #000;
+        .stat-value {
             font-weight: bold;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.2s;
+            color: #58a6ff;
         }
 
-        .btn-redeem:hover {
-            background: #ff5500;
-            color: #fff;
+        .stat-label {
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .error-msg {
+            color: #f85149;
+            display: none;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <!-- KHU VỰC 1: XÁC NHẬN ID PLAYER -->
-    <div class="hero-section">
-        <div class="box-container">
-            <h1>Nhận Code Súng VIP</h1>
-            <p class="desc">Nhập ID Free Fire để kiểm tra tên nhân vật</p>
-            
-            <div class="input-group">
-                <input type="text" id="playerID" placeholder="Nhập ID Free Fire của bạn...">
-            </div>
-
-            <button class="btn-confirm" id="btnConfirm" onclick="verifyPlayer()">Xác Nhận</button>
-
-            <!-- Thẻ hiển thị tên nhân vật tìm được -->
-            <div class="player-info" id="playerInfo"></div>
+    <div class="container">
+        <h2>Tra cứu người dùng GitHub</h2>
+        <div class="search-box">
+            <input type="text" id="usernameInput" placeholder="Nhập ID/Username (ví dụ: torvalds)" onkeypress="handleKeyPress(event)">
+            <button onclick="searchUser()">Tìm</button>
         </div>
-    </div>
 
-    <!-- KHU VỰC 2: DANH SÁCH CODE SÚNG CÓ HÌNH ẢNH & CHỖ NHẬP CODE -->
-    <div class="code-section" id="codeArea">
-        <h1>Kho Code Súng Free Fire</h1>
-        <p class="desc">Chọn súng, lấy mã và nhập trực tiếp bên dưới để kích hoạt quà</p>
+        <div class="error-msg" id="errorMsg">Không tìm thấy người dùng này!</div>
 
-        <div class="code-grid">
-            
-            <!-- SÚNG 1: AK47 Rồng Xanh -->
-            <div class="code-card">
-                <img src="https://ff.garena.com/static/images/weapon/weapon_ak.png" alt="AK-47 Rồng Xanh" class="gun-img">
-                <div class="gun-title">AK-47 Rồng Xanh (Cấp 7)</div>
-                <div class="code-display">Code: AK47-RONG-XANH-VIP</div>
-                <div class="code-input-box">
-                    <input type="text" id="input1" placeholder="Nhập code ở đây...">
-                    <button class="btn-redeem" onclick="submitCode('input1')">Kích Hoạt</button>
+        <div class="result-card" id="resultCard">
+            <img id="userAvatar" class="avatar" src="" alt="Avatar">
+            <div class="user-name" id="userName">---</div>
+            <div class="user-username" id="userLogin">@---</div>
+            <div class="user-bio" id="userBio">Không có tiểu sử.</div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="repoCount">0</div>
+                    <div class="stat-label">Repositories</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="followerCount">0</div>
+                    <div class="stat-label">Followers</div>
                 </div>
             </div>
-
-            <!-- SÚNG 2: M1014 Long Tộc -->
-            <div class="code-card">
-                <img src="https://ff.garena.com/static/images/weapon/weapon_m1014.png" alt="M1014 Long Tộc" class="gun-img">
-                <div class="gun-title">M1014 Long Tộc (Cấp 7)</div>
-                <div class="code-display">Code: M101-LONG-TOC-2026</div>
-                <div class="code-input-box">
-                    <input type="text" id="input2" placeholder="Nhập code ở đây...">
-                    <button class="btn-redeem" onclick="submitCode('input2')">Kích Hoạt</button>
-                </div>
-            </div>
-
-            <!-- SÚNG 3: MP40 Mãng Xà -->
-            <div class="code-card">
-                <img src="https://ff.garena.com/static/images/weapon/weapon_mp40.png" alt="MP40 Mãng Xà" class="gun-img">
-                <div class="gun-title">MP40 Mãng Xà (Cấp 7)</div>
-                <div class="code-display">Code: MP40-MANG-XA-FREE</div>
-                <div class="code-input-box">
-                    <input type="text" id="input3" placeholder="Nhập code ở đây...">
-                    <button class="btn-redeem" onclick="submitCode('input3')">Kích Hoạt</button>
-                </div>
-            </div>
-
-            <!-- SÚNG 4: SCAR Cá Mập Đen -->
-            <div class="code-card">
-                <img src="https://ff.garena.com/static/images/weapon/weapon_scar.png" alt="Scar Cá Mập Đen" class="gun-img">
-                <div class="gun-title">SCAR Cá Mập Đen (Cấp 7)</div>
-                <div class="code-display">Code: SCAR-CA-MAP-DEN-FF</div>
-                <div class="code-input-box">
-                    <input type="text" id="input4" placeholder="Nhập code ở đây...">
-                    <button class="btn-redeem" onclick="submitCode('input4')">Kích Hoạt</button>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <script>
-        let currentAccountName = "";
+        async function searchUser() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const resultCard = document.getElementById('resultCard');
+            const errorMsg = document.getElementById('errorMsg');
 
-        async function verifyPlayer() {
-            const idInput = document.getElementById('playerID').value.trim();
-            const playerInfoDiv = document.getElementById('playerInfo');
-            const btnConfirm = document.getElementById('btnConfirm');
-
-            if (idInput === "") {
-                alert("Vui lòng nhập ID Free Fire!");
+            if (!username) {
+                alert("Vui lòng nhập ID người dùng!");
                 return;
             }
 
-            btnConfirm.innerText = "Đang tra cứu...";
-            btnConfirm.disabled = true;
+            // Tắt báo lỗi và kết quả cũ
+            errorMsg.style.display = 'none';
+            resultCard.style.display = 'none';
 
             try {
-                // Gọi API tra cứu Nickname thật từ máy chủ Free Fire
-                const response = await fetch(`https://free-fire-api-five.vercel.app/api/account?id=${idInput}`);
-                const data = await response.json();
+                // Gọi REST API công khai của GitHub
+                const response = await fetch(`https://api.github.com/users/${username}`);  if (!response.ok) { throw new Error('User not found'); }  const data = await response.json();  // Cập nhật thông tin lên màn hình document.getElementById('userAvatar').src = data.avatar_url; document.getElementById('userName').textContent = data.name \vert{}\vert{} data.login; document.getElementById('userLogin').textContent = `@${data.login}`;
+                document.getElementById('userBio').textContent = data.bio || 'Người dùng này chưa thêm tiểu sử.';
+                document.getElementById('repoCount').textContent = data.public_repos;
+                document.getElementById('followerCount').textContent = data.followers;
 
-                if (data && (data.nickname || data.AccountName || data.name)) {
-                    currentAccountName = data.nickname || data.AccountName || data.name;
-                    
-                    playerInfoDiv.className = "player-info success";
-                    playerInfoDiv.style.display = "block";
-                    playerInfoDiv.innerHTML = `✅ Nhân vật: <b>${currentAccountName}</b><br>Tự động di chuyển tới kho nhận code...`;
+                // Hiển thị khung kết quả
+                resultCard.style.display = 'block';
 
-                    // Tự động cuộn xuống khu vực code súng
-                    setTimeout(() => {
-                        document.getElementById('codeArea').scrollIntoView({
-                            behavior: 'smooth'
-                        });
-                    }, 1500);
-
-                } else {
-                    // Trường hợp API trả về nhưng không thấy thông tin
-                    showFallbackPlayer(idInput);
-                }
             } catch (error) {
-                // Trường hợp API gặp sự cố, giả lập tên ID tìm thấy để trải nghiệm mượt mà
-                showFallbackPlayer(idInput);
-            } finally {
-                btnConfirm.innerText = "Xác Nhận";
-                btnConfirm.disabled = false;
+                errorMsg.style.display = 'block';
             }
         }
 
-        function showFallbackPlayer(id) {
-            const playerInfoDiv = document.getElementById('playerInfo');
-            currentAccountName = "Player_" + id.slice(-4);
-            
-            playerInfoDiv.className = "player-info success";
-            playerInfoDiv.style.display = "block";
-            playerInfoDiv.innerHTML = `✅ Tìm thấy tài khoản: <b>${currentAccountName}</b><br>Đang chuyển đến khu vực nhập code...`;
-
-            setTimeout(() => {
-                document.getElementById('codeArea').scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }, 1200);
-        }
-
-        function submitCode(inputId) {
-            const codeValue = document.getElementById(inputId).value.trim();
-            if (codeValue === "") {
-                alert("Vui lòng nhập mã code vào ô!");
-                return;
+        // Bấm phím Enter để tìm kiếm
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchUser();
             }
-
-            if (!currentAccountName) {
-                alert("Vui lòng nhập ID và bấm Xác Nhận ở phía trên trước!");
-                document.querySelector('.hero-section').scrollIntoView({ behavior: 'smooth' });
-                return;
-            }
-
-            alert(`🎉 Chúc mừng nhân vật [${currentAccountName}] đã kích hoạt mã [${codeValue}] thành công! Quà sẽ được gửi vào hòm thư ingame.`);
-            document.getElementById(inputId).value = "";
         }
     </script>
 </body>
