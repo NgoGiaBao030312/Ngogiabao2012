@@ -198,66 +198,7 @@
         <p class="desc">Mỗi code có thể nhập trực tiếp tại trang đổi quà của Garena</p>
 
         <div class="code-grid">
-            <!-- Súng 1 -->
+            <!-- Súng 1 (Bạn có thể đổi chữ trong thẻ code-box thành mã code thật của bạn) -->
             <div class="code-card">
-                <div class="gun-title">AK-47 Rồng Xanh (Cấp 7)</div>
-                <div class="code-box" id="code1">FFAK-47RX-2026</div>
-                <button class="btn-copy" onclick="copyCode('code1')">Sao Chép Code</button>
-            </div>
-
-            <!-- Súng 2 -->
-            <div class="code-card">
-                <div class="gun-title">M1014 Long Tộc (Cấp 7)</div>
-                <div class="code-box" id="code2">FFM1-014L-TVIP</div>
-                <button class="btn-copy" onclick="copyCode('code2')">Sao Chép Code</button>
-            </div>
-
-            <!-- Súng 3 -->
-            <div class="code-card">
-                <div class="gun-title">MP40 Mãng Xà (Cấp 7)</div>
-                <div class="code-box" id="code3">FFMP-40MX-CODE</div>
-                <button class="btn-copy" onclick="copyCode('code3')">Sao Chép Code</button>
-            </div>
-
-            <!-- Súng 4 -->
-            <div class="code-card">
-                <div class="gun-title">Scar Cá Mập Đen (Cấp 7)</div>
-                <div class="code-box" id="code4">FFSC-ARCM-2026</div>
-                <button class="btn-copy" onclick="copyCode('code4')">Sao Chép Code</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function verifyAndRedirect() {
-            const idInput = document.getElementById('playerID').value.trim();
-            const playerInfoDiv = document.getElementById('playerInfo');
-
-            if (idInput === "") {
-                alert("Vui lòng nhập ID Free Fire!");
-                return;
-            }
-
-            // Giả lập tìm tên người chơi theo ID
-            const mockName = "FF_GamePlayer_" + idInput.slice(-4);
-
-            // Hiển thị thông báo thành công và tên người chơi
-            playerInfoDiv.style.display = "block";
-            playerInfoDiv.innerHTML = `✅ Tìm thấy nhân vật: <b>${mockName}</b><br>Đang di chuyển đến kho Code...`;
-
-            // Tự động cuộn mượt xuống khu vực Code súng sau 1.2 giây
-            setTimeout(() => {
-                document.getElementById('codeArea').scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }, 1200);
-        }
-
-        function copyCode(elementId) {
-            const codeText = document.getElementById(elementId).innerText;
-            navigator.clipboard.writeText(codeText);
-            alert("Đã sao chép mã code: " + codeText);
-        }
-    </script>
-</body>
-</html>
+                <div class="gun-title">AK-47 Rồng Xanh</div>
+                <div class
