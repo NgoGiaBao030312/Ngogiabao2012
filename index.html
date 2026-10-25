@@ -3,186 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xác Thực Key Truy Cập</title>
+    <title>Sự Kiện Nhận Code Súng Free Fire</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #1e1e2f, #2d2b42);
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            background-color: #0f1015;
+            color: #ffffff;
             text-align: center;
         }
 
-        .card h2 {
-            margin-bottom: 20px;
+        /* KHU VỰC 1: XÁC NHẬN ID */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), 
+                        url('https://ff.garena.com/static/images/bg.jpg') center/cover no-repeat;
+        }
+
+        .box-container {
+            background: rgba(26, 29, 38, 0.95);
+            border: 2px solid #ff9900;
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 0 20px rgba(255, 153, 0, 0.4);
+        }
+
+        h1 {
+            color: #ff9900;
+            margin-bottom: 10px;
             font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        p.desc {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 20px;
         }
 
         .input-group {
             margin-bottom: 20px;
         }
 
-        .input-group input {
+        input[type="text"] {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.2);
+            padding: 12px 15px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            background: #090a0f;
             color: #fff;
-            font-size: 18px;
-            text-align: center;
-            letter-spacing: 2px;
+            font-size: 16px;
             outline: none;
+            text-align: center;
             transition: 0.3s;
-            text-transform: uppercase;
         }
 
-        .input-group input:focus {
-            border-color: #0088cc;
-            box-shadow: 0 0 8px rgba(0, 136, 204, 0.5);
+        input[type="text"]:focus {
+            border-color: #ff9900;
         }
 
-        button {
+        button.btn-confirm {
             width: 100%;
             padding: 12px;
+            background: linear-gradient(45deg, #ff9900, #ff5500);
             border: none;
-            border-radius: 8px;
-            background: #0088cc;
-            color: white;
-            font-size: 16px;
+            border-radius: 6px;
+            color: #fff;
             font-weight: bold;
+            font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s;
+            text-transform: uppercase;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        button:hover {
-            background: #006699;
+        button.btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 85, 0, 0.5);
         }
 
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
+        /* Thẻ hiển thị thông tin nhân vật */
+        .player-info {
+            display: none;
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(0, 255, 102, 0.1);
+            border: 1px solid #00ff66;
+            border-radius: 6px;
+            color: #00ff66;
+            font-size: 15px;
         }
 
-        #message {
-            margin-top: 15px;
-            font-size: 14px;
-            min-height: 20px;
+        /* KHU VỰC 2: QUÀ TẶNG CODE SÚNG */
+        .code-section {
+            min-height: 100vh;
+            padding: 50px 20px;
+            background: #14161d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .success {
-            color: #4caf50;
+        .code-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 30px;
         }
 
-        .error {
-            color: #f44336;
+        .code-card {
+            background: #1f232e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .code-card:hover {
+            border-color: #ff9900;
+        }
+
+        .gun-title {
+            color: #ffcc00;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .code-box {
+            background: #000;
+            color: #00ff66;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+            letter-spacing: 2px;
+            margin: 10px 0;
+            border: 1px dashed #00ff66;
+        }
+
+        .btn-copy {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-copy:hover {
+            background: #ff9900;
+            color: #000;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Nhập Key Kích Hoạt</h2>
-        <div class="input-group">
-            <!-- Đã thêm sự kiện tự động định dạng và giới hạn tối đa 19 ký tự (16 chữ + 3 dấu gạch) -->
-            <input type="text" id="keyInput" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" autocomplete="off">
+    <!-- KHU VỰC 1: XÁC NHẬN ID PLAYER -->
+    <div class="hero-section">
+        <div class="box-container">
+            <h1>Nhận Code Súng VIP</h1>
+            <p class="desc">Nhập ID Free Fire để xác nhận thông tin nhân vật</p>
+            
+            <div class="input-group">
+                <input type="text" id="playerID" placeholder="Nhập ID Free Fire (VD: 123456789)...">
+            </div>
+
+            <button class="btn-confirm" onclick="verifyAndRedirect()">Xác Nhận</button>
+
+            <!-- Kết quả hiển thị tên -->
+            <div class="player-info" id="playerInfo"></div>
         </div>
-        <button id="submitBtn" onclick="verifyKey()">Xác nhận Key</button>
-        <div id="message"></div>
+    </div>
+
+    <!-- KHU VỰC 2: DANH SÁCH CODE SÚNG -->
+    <div class="code-section" id="codeArea">
+        <h1>Khu Vực Nhận Code Súng Free Fire</h1>
+        <p class="desc">Mỗi code có thể nhập trực tiếp tại trang đổi quà của Garena</p>
+
+        <div class="code-grid">
+            <!-- Súng 1 -->
+            <div class="code-card">
+                <div class="gun-title">AK-47 Rồng Xanh (Cấp 7)</div>
+                <div class="code-box" id="code1">FFAK-47RX-2026</div>
+                <button class="btn-copy" onclick="copyCode('code1')">Sao Chép Code</button>
+            </div>
+
+            <!-- Súng 2 -->
+            <div class="code-card">
+                <div class="gun-title">M1014 Long Tộc (Cấp 7)</div>
+                <div class="code-box" id="code2">FFM1-014L-TVIP</div>
+                <button class="btn-copy" onclick="copyCode('code2')">Sao Chép Code</button>
+            </div>
+
+            <!-- Súng 3 -->
+            <div class="code-card">
+                <div class="gun-title">MP40 Mãng Xà (Cấp 7)</div>
+                <div class="code-box" id="code3">FFMP-40MX-CODE</div>
+                <button class="btn-copy" onclick="copyCode('code3')">Sao Chép Code</button>
+            </div>
+
+            <!-- Súng 4 -->
+            <div class="code-card">
+                <div class="gun-title">Scar Cá Mập Đen (Cấp 7)</div>
+                <div class="code-box" id="code4">FFSC-ARCM-2026</div>
+                <button class="btn-copy" onclick="copyCode('code4')">Sao Chép Code</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const BOT_TOKEN = '8416102851:AAFH46P9tmATY5UF8f3T_xlbqJ5MVoyz_qk';
+        function verifyAndRedirect() {
+            const idInput = document.getElementById('playerID').value.trim();
+            const playerInfoDiv = document.getElementById('playerInfo');
 
-        // Đoạn script tự động thêm dấu gạch ngang (-) khi gõ
-        const keyInput = document.getElementById('keyInput');
-        keyInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-            let formattedValue = '';
-            
-            for (let i = 0; i < value.length; i++) {
-                if (i > 0 && i % 4 === 0 && i < 16) {
-                    formattedValue += '-';
-                }
-                if (i < 16) { // Giới hạn tối đa 16 ký tự chữ/số
-                    formattedValue += value[i];
-                }
-            }
-            e.target.value = formattedValue;
-        });
-
-        async function verifyKey() {
-            const keyVal = keyInput.value.trim();
-            const messageDiv = document.getElementById('message');
-            const submitBtn = document.getElementById('submitBtn');
-
-            if (keyVal.length < 19) {
-                messageDiv.className = 'error';
-                messageDiv.innerText = 'Vui lòng nhập đầy đủ định dạng XXXX-XXXX-XXXX-XXXX!';
+            if (idInput === "") {
+                alert("Vui lòng nhập ID Free Fire!");
                 return;
             }
 
-            submitBtn.disabled = true;
-            messageDiv.className = '';
-            messageDiv.innerText = 'Đang kiểm tra Key...';
+            // Giả lập tìm tên người chơi theo ID
+            const mockName = "FF_GamePlayer_" + idInput.slice(-4);
 
-            try {
-                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`);
-                const data = await response.json();
+            // Hiển thị thông báo thành công và tên người chơi
+            playerInfoDiv.style.display = "block";
+            playerInfoDiv.innerHTML = `✅ Tìm thấy nhân vật: <b>${mockName}</b><br>Đang di chuyển đến kho Code...`;
 
-                if (!data.ok) {
-                    throw new Error('Không thể kết nối với Telegram API');
-                }
+            // Tự động cuộn mượt xuống khu vực Code súng sau 1.2 giây
+            setTimeout(() => {
+                document.getElementById('codeArea').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }, 1200);
+        }
 
-                const updates = data.result;
-                let isValidKey = false;
-
-                for (let update of updates) {
-                    if (update.message && update.message.text) {
-                        // So sánh key người dùng nhập với tin nhắn trong Telegram
-                        if (update.message.text.trim().toUpperCase() === keyVal) {
-                            isValidKey = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (isValidKey) {
-                    messageDiv.className = 'success';
-                    messageDiv.innerText = '✅ Key hợp lệ! Đã xác nhận thành công.';
-                    // Thêm chuyển hướng trang ở đây nếu muốn (Ví dụ: window.location.href = "trang_chu.html";)
-                } else {
-                    messageDiv.className = 'error';
-                    messageDiv.innerText = '❌ Key không đúng hoặc chưa được gửi cho Bot!';
-                }
-
-            } catch (error) {
-                console.error(error);
-                messageDiv.className = 'error';
-                messageDiv.innerText = 'Lỗi kết nối kiểm tra Key!';
-            } finally {
-                submitBtn.disabled = false;
-            }
+        function copyCode(elementId) {
+            const codeText = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(codeText);
+            alert("Đã sao chép mã code: " + codeText);
         }
     </script>
 </body>
