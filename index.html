@@ -49,9 +49,12 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             background: rgba(0, 0, 0, 0.2);
             color: #fff;
-            font-size: 16px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 2px;
             outline: none;
             transition: 0.3s;
+            text-transform: uppercase;
         }
 
         .input-group input:focus {
@@ -101,34 +104,49 @@
     <div class="card">
         <h2>Nhập Key Kích Hoạt</h2>
         <div class="input-group">
-            <input type="text" id="keyInput" placeholder="Nhập Key của bạn..." autocomplete="off">
+            <!-- Đã thêm sự kiện tự động định dạng và giới hạn tối đa 19 ký tự (16 chữ + 3 dấu gạch) -->
+            <input type="text" id="keyInput" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" autocomplete="off">
         </div>
         <button id="submitBtn" onclick="verifyKey()">Xác nhận Key</button>
         <div id="message"></div>
     </div>
 
     <script>
-        // Token Bot Telegram của bạn
         const BOT_TOKEN = '8416102851:AAFH46P9tmATY5UF8f3T_xlbqJ5MVoyz_qk';
 
+        // Đoạn script tự động thêm dấu gạch ngang (-) khi gõ
+        const keyInput = document.getElementById('keyInput');
+        keyInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            let formattedValue = '';
+            
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0 && i < 16) {
+                    formattedValue += '-';
+                }
+                if (i < 16) { // Giới hạn tối đa 16 ký tự chữ/số
+                    formattedValue += value[i];
+                }
+            }
+            e.target.value = formattedValue;
+        });
+
         async function verifyKey() {
-            const keyInput = document.getElementById('keyInput').value.trim();
+            const keyVal = keyInput.value.trim();
             const messageDiv = document.getElementById('message');
             const submitBtn = document.getElementById('submitBtn');
 
-            if (!keyInput) {
+            if (keyVal.length < 19) {
                 messageDiv.className = 'error';
-                messageDiv.innerText = 'Vui lòng nhập Key!';
+                messageDiv.innerText = 'Vui lòng nhập đầy đủ định dạng XXXX-XXXX-XXXX-XXXX!';
                 return;
             }
 
-            // Vô hiệu hóa nút và hiển thị trạng thái chờ
             submitBtn.disabled = true;
             messageDiv.className = '';
             messageDiv.innerText = 'Đang kiểm tra Key...';
 
             try {
-                // Lấy danh sách tin nhắn từ Bot Telegram
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`);
                 const data = await response.json();
 
@@ -136,13 +154,13 @@
                     throw new Error('Không thể kết nối với Telegram API');
                 }
 
-                // Kiểm tra xem Key nhập vào có khớp với bất kỳ tin nhắn nào trong Telegram không
                 const updates = data.result;
                 let isValidKey = false;
 
                 for (let update of updates) {
                     if (update.message && update.message.text) {
-                        if (update.message.text.trim() === keyInput) {
+                        // So sánh key người dùng nhập với tin nhắn trong Telegram
+                        if (update.message.text.trim().toUpperCase() === keyVal) {
                             isValidKey = true;
                             break;
                         }
@@ -152,10 +170,10 @@
                 if (isValidKey) {
                     messageDiv.className = 'success';
                     messageDiv.innerText = '✅ Key hợp lệ! Đã xác nhận thành công.';
-                    // Thêm chuyển hướng hoặc hành động sau khi xác thực thành công tại đây
+                    // Thêm chuyển hướng trang ở đây nếu muốn (Ví dụ: window.location.href = "trang_chu.html";)
                 } else {
                     messageDiv.className = 'error';
-                    messageDiv.innerText = '❌ Key không đúng hoặc không tồn tại trên Telegram!';
+                    messageDiv.innerText = '❌ Key không đúng hoặc chưa được gửi cho Bot!';
                 }
 
             } catch (error) {
