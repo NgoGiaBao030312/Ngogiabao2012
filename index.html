@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu người dùng GitHub</title>
+    <title>Tra Cứu ID & Tên Người Chơi Free Fire</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,8 +13,8 @@
         }
 
         body {
-            background-color: #0d1117;
-            color: #c9d1d9;
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,195 +22,222 @@
             padding: 20px;
         }
 
-        .container {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 12px;
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
             padding: 30px;
             width: 100%;
             max-width: 450px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             text-align: center;
         }
 
         h2 {
             margin-bottom: 20px;
-            color: #f0f6fc;
+            color: #ffb703;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .search-box {
-            display: flex;
-            gap: 10px;
+        .input-group {
             margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ddd;
         }
 
         input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            background-color: #0d1117;
-            color: #f0f6fc;
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: none;
             outline: none;
-            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        input::placeholder {
+            color: #ccc;
         }
 
         input:focus {
-            border-color: #58a6ff;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 8px rgba(255, 183, 3, 0.8);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
 
         button {
-            padding: 12px 18px;
+            flex: 1;
+            padding: 12px;
             border: none;
-            border-radius: 6px;
-            background-color: #238636;
-            color: white;
+            border-radius: 8px;
+            background: #ffb703;
+            color: #000;
             font-weight: bold;
+            font-size: 15px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: 0.3s;
         }
 
         button:hover {
-            background-color: #2ea043;
+            background: #fb8500;
+            color: #fff;
         }
 
-        .result-card {
-            display: none;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #30363d;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid #58a6ff;
-            margin-bottom: 15px;
-        }
-
-        .user-name {
-            font-size: 20px;
-            font-weight: bold;
-            color: #f0f6fc;
-        }
-
-        .user-username {
-            font-size: 14px;
-            color: #8b949e;
-            margin-bottom: 10px;
-        }
-
-        .user-bio {
-            font-size: 14px;
-            color: #c9d1d9;
-            margin-bottom: 15px;
-            font-style: italic;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            background-color: #0d1117;
-            padding: 12px;
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
             border-radius: 8px;
-            border: 1px solid #30363d;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            color: #58a6ff;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #8b949e;
-        }
-
-        .error-msg {
-            color: #f85149;
+            background: rgba(0, 0, 0, 0.3);
             display: none;
-            margin-top: 10px;
-            font-size: 14px;
+            word-break: break-word;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .result-box.active {
+            display: block;
+        }
+
+        .status-loading {
+            color: #ffb703;
+        }
+
+        .status-error {
+            color: #ff4d4d;
+        }
+
+        .status-success {
+            color: #00f5d4;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Tra cứu người dùng GitHub</h2>
-        <div class="search-box">
-            <input type="text" id="usernameInput" placeholder="Nhập ID/Username (ví dụ: torvalds)" onkeypress="handleKeyPress(event)">
-            <button onclick="searchUser()">Tìm</button>
-        </div>
-
-        <div class="error-msg" id="errorMsg">Không tìm thấy người dùng này!</div>
-
-        <div class="result-card" id="resultCard">
-            <img id="userAvatar" class="avatar" src="" alt="Avatar">
-            <div class="user-name" id="userName">---</div>
-            <div class="user-username" id="userLogin">@---</div>
-            <div class="user-bio" id="userBio">Không có tiểu sử.</div>
-
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="repoCount">0</div>
-                    <div class="stat-label">Repositories</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="followerCount">0</div>
-                    <div class="stat-label">Followers</div>
-                </div>
-            </div>
-        </div>
+<div class="card">
+    <h2>Tra Cứu Free Fire</h2>
+    
+    <div class="input-group">
+        <label for="userInput">Nhập ID hoặc Tên người chơi:</label>
+        <input type="text" id="userInput" placeholder="VD: 123456789 hoặc tên Game...">
     </div>
 
-    <script>
-        async function searchUser() {
-            const username = document.getElementById('usernameInput').value.trim();
-            const resultCard = document.getElementById('resultCard');
-            const errorMsg = document.getElementById('errorMsg');
+    <div class="btn-group">
+        <button onclick="searchPlayer()">Tra Cứu</button>
+    </div>
 
-            if (!username) {
-                alert("Vui lòng nhập ID người dùng!");
-                return;
-            }
+    <div id="resultBox" class="result-box"></div>
+</div>
 
-            // Tắt báo lỗi và kết quả cũ
-            errorMsg.style.display = 'none';
-            resultCard.style.display = 'none';
+<script>
+    // Hàm lưu dữ liệu vào localStorage để phục vụ việc tìm ID từ Tên
+    function saveToHistory(id, name) {
+        let history = JSON.parse(localStorage.getItem('ff_player_db')) || {};
+        history[name.toLowerCase()] = id; // Lưu tên dưới dạng chữ thường để dễ tìm kiếm
+        localStorage.setItem('ff_player_db', JSON.stringify(history));
+    }
 
+    // Hàm lấy ID từ Tên lưu trong localStorage
+    function getIdByName(name) {
+        let history = JSON.parse(localStorage.getItem('ff_player_db')) || {};
+        return history[name.toLowerCase()] || null;
+    }
+
+    async function searchPlayer() {
+        const inputVal = document.getElementById('userInput').value.trim();
+        const resultBox = document.getElementById('resultBox');
+
+        if (!inputVal) {
+            resultBox.className = "result-box active status-error";
+            resultBox.innerHTML = "Vui lòng nhập ID hoặc Tên người chơi!";
+            return;
+        }
+
+        resultBox.className = "result-box active status-loading";
+        resultBox.innerHTML = "Đang tra cứu dữ liệu...";
+
+        // Kiểm tra xem đầu vào là ID (số) hay Tên (chuỗi)
+        const isNumeric = /^\d+$/.test(inputVal);
+
+        if (isNumeric) {
+            // Trường hợp 1: Nhập ID -> Tìm Tên qua API
             try {
-                // Gọi REST API công khai của GitHub
-                const response = await fetch(`https://api.github.com/users/${username}`);  if (!response.ok) { throw new Error('User not found'); }  const data = await response.json();  // Cập nhật thông tin lên màn hình document.getElementById('userAvatar').src = data.avatar_url; document.getElementById('userName').textContent = data.name \vert{}\vert{} data.login; document.getElementById('userLogin').textContent = `@${data.login}`;
-                document.getElementById('userBio').textContent = data.bio || 'Người dùng này chưa thêm tiểu sử.';
-                document.getElementById('repoCount').textContent = data.public_repos;
-                document.getElementById('followerCount').textContent = data.followers;
-
-                // Hiển thị khung kết quả
-                resultCard.style.display = 'block';
-
-            } catch (error) {
-                errorMsg.style.display = 'block';
+                // API Free Fire công khai kiểm tra Nickname theo ID (Region VN)
+                const response = await fetch(`https://region-vn.garena.com/api/game/ff/player_info?app_id=100067&role_id=${inputVal}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.nickname) {
+                        const nickname = data.nickname;
+                        saveToHistory(inputVal, nickname); // Lưu lại vào bộ nhớ
+                        
+                        resultBox.className = "result-box active status-success";
+                        resultBox.innerHTML = `
+                            <p><strong>ID:</strong> ${inputVal}</p>
+                            <p><strong>Tên nhân vật:</strong> <span style="color: #ffb703;">${nickname}</span></p>
+                        `;
+                    } else {
+                        resultBox.className = "result-box active status-error";
+                        resultBox.innerHTML = "Không tìm thấy người chơi với ID này!";
+                    }
+                } else {
+                    // Mẹo dự phòng (Backup API) nếu API trên bận
+                    fetchBackupApi(inputVal);
+                }
+            } catch (err) {
+                fetchBackupApi(inputVal);
+            }
+        } else {
+            // Trường hợp 2: Nhập Tên -> Tìm ID từ cơ sở dữ liệu đã lưu
+            const foundId = getIdByName(inputVal);
+            if (foundId) {
+                resultBox.className = "result-box active status-success";
+                resultBox.innerHTML = `
+                    <p><strong>Tên nhân vật:</strong> ${inputVal}</p>
+                    <p><strong>ID Tìm Được:</strong> <span style="color: #ffb703;">${foundId}</span></p>
+                    <small style="color: #aaa; font-size: 11px;">(Dữ liệu từ lịch sử tra cứu trên máy)</small>
+                `;
+            } else {
+                resultBox.className = "result-box active status-error";
+                resultBox.innerHTML = "Chưa có dữ liệu ID cho tên này! Vui lòng tra cứu bằng **ID** ít nhất 1 lần để hệ thống ghi nhớ.";
             }
         }
+    }
 
-        // Bấm phím Enter để tìm kiếm
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                searchUser();
+    // API dự phòng tra cứu ID
+    async function fetchBackupApi(id) {
+        const resultBox = document.getElementById('resultBox');
+        try {
+            const res = await fetch(`https://free-fire-api-five.vercel.app/api/id?id=${id}`);
+            const data = await res.json();
+            if (data && data.nickname) {
+                saveToHistory(id, data.nickname);
+                resultBox.className = "result-box active status-success";
+                resultBox.innerHTML = `
+                    <p><strong>ID:</strong> ${id}</p>
+                    <p><strong>Tên nhân vật:</strong> <span style="color: #ffb703;">${data.nickname}</span></p>
+                `;
+            } else {
+                resultBox.className = "result-box active status-error";
+                resultBox.innerHTML = "Không tìm thấy người chơi hoặc API bị lỗi!";
             }
+        } catch (e) {
+            resultBox.className = "result-box active status-error";
+            resultBox.innerHTML = "Lỗi kết nối máy chủ tra cứu!";
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
